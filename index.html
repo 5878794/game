@@ -36,7 +36,7 @@
     <script>
 
         var loadResources_src = {
-            bg:"/image/bg1.jpg"
+            bg:"/image/door0.png"
         };
         var resources = {};
 
@@ -50,8 +50,9 @@
                     alpha:100
                 });
                 a.animate({
+                    y:-resources.bg.height*APP.resourceScale,
                     x:-resources.bg.width*APP.resourceScale,
-                    loop:false,
+                    loop:true,
                     flip:false
                 },6000,0,function(){
                     console.log(123)

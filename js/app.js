@@ -641,6 +641,33 @@ var APP = {
             }
         }
     },
+
+
+        //创建背景
+    //var a = new APP.background({
+    //    res:resources.bg,             //资源图片对象
+    //    repeat:true,                  //是否平铺
+    //    x:0,                          //起始横坐标
+    //    y:0,                          //起始纵坐标
+    //    alpha:100                     //透明度
+    //});
+
+
+        //背景移动
+    //a.animate({
+    //    y:-resources.bg.height*APP.resourceScale,         //纵坐标
+    //    x:-resources.bg.width*APP.resourceScale,          //横坐标
+    //    loop:true,                    //是否循环移动
+    //    flip:false                    //是否翻转移动
+    //},6000,0,function(){              //移动时间,延迟,回调
+    //    console.log(123)
+    //});
+
+
+        //显示调用 (在APP.runFn里面执行  draw()方法)
+    //APP.runFn = function(){
+    //    a.draw();
+    //}
     background:(function(){
         var bg = function(opt){
             this.bg = opt.res;
@@ -803,17 +830,28 @@ var APP = {
                 this.ctx.globalAlpha = this.alpha/100;
 
                 while(temp<=this.canvasWidth){
-                    this.ctx.drawImage(
-                        this.bg,
-                        0,
-                        0,
-                        this.resWidth,
-                        this.resHeight,
-                        temp,
-                        this.y,
-                        this.resWidth * APP.resourceScale,
-                        this.resHeight * APP.resourceScale
-                    );
+
+                    var temp1 = this.y;
+                    while(temp1<=this.canvasHeight){
+                        this.ctx.drawImage(
+                            this.bg,
+                            0,
+                            0,
+                            this.resWidth,
+                            this.resHeight,
+                            temp,
+                            temp1,
+                            this.resWidth * APP.resourceScale,
+                            this.resHeight * APP.resourceScale
+                        );
+
+                        if(this.repeat){
+                            temp1 += this.resHeight * APP.resourceScale;
+                        }else{
+                            temp1 += this.canvasHeight;
+                        }
+                    }
+
 
                     if(this.repeat){
                         temp += this.resWidth * APP.resourceScale;
