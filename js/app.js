@@ -15,7 +15,7 @@ window.addEventListener("touchmove",function(e){
     e.preventDefault();
 },false);
 
-var loadResources_src = [];
+
 
 
 
@@ -646,6 +646,9 @@ var APP = {
             this.bg = opt.res;
             this.x = opt.x || 0;
             this.y = opt.y || 0;
+            //透明度
+            this.alpha = (!opt.alpha && opt.alpha!=0)? 100 : opt.alpha;
+            //是否平铺
             this.repeat = $.isBoolean(opt.repeat)? opt.repeat : true;
 
             this.canvas = null;
@@ -665,7 +668,7 @@ var APP = {
         };
         bg.prototype = {
             init:function(){
-                this.canvas = APP.createCanvas($("body"),null,null,1);
+                this.canvas = APP.createCanvas(document.body,null,null,1);
                 this.ctx = this.canvas.getContext("2d");
 
                 this.canvasWidth = this.canvas.width;
@@ -673,19 +676,131 @@ var APP = {
 
                 this.draw();
             },
-            animate:function(){
+            animate:function(opt,time,delay,callback){
+                delay = delay || 0;
+                time = time || 1000;
+                var _this = this;
 
+                setTimeout(function(){
+                    var start_time = new Date().getTime();
+
+                    _this.cacheData.push({
+                        startTime : start_time,
+                        endTime : start_time + time,
+                        time: time,
+
+                        e_x:(opt.x == 0 || opt.x)? opt.x : _this.x,
+                        e_y:(opt.y == 0 || opt.y)? opt.y : _this.y,
+                        s_x:_this.x,
+                        s_y:_this.y,
+
+                        loop:opt.loop || false,
+                        flip:opt.flip || false,
+
+                        e_alpha:(opt.alpha == 0 || opt.alpha)? opt.alpha : _this.alpha,
+                        s_alpha:_this.alpha,
+
+
+                        callback:callback || function(){}
+                    })
+                },delay);
             },
             clearCacheData:function(){
+                var data = this.cacheData,
+                    now_time = new Date().getTime(),
+                    array = [];
 
+                for(var i= 0,l=data.length;i<l;i++){
+                    var this_data = data[i];
+                    if(now_time >= this_data.endTime){
+                        if(this_data.loop){
+                            array.push({
+                                startTime : now_time,
+                                endTime : now_time + this_data.time,
+                                time: this_data.time,
+
+                                e_x:(this_data.flip)? this_data.s_x : this_data.e_x,
+                                e_y:(this_data.flip)? this_data.s_y : this_data.e_y,
+                                s_x:(this_data.flip)? this_data.e_x : this_data.s_x,
+                                s_y:(this_data.flip)? this_data.e_y : this_data.s_y,
+
+                                s_alpha:(this_data.flip)? this_data.e_alpha : this_data.s_alpha,
+                                e_alpha:(this_data.flip)? this_data.s_alpha : this_data.e_alpha,
+
+                                loop:true,
+                                flip:this_data.flip
+
+                            });
+
+                        }else{
+                            if(this_data.e_x != this_data.s_x){
+                                this.x = this_data.e_x;
+                            }
+                            if(this_data.e_y != this_data.s_y){
+                                this.y = this_data.e_y;
+                            }
+                            if(this_data.e_alpha != this_data.s_alpha){
+                                this.alpha = this_data.e_alpha;
+                            }
+
+                            this_data.callback();
+                        }
+                    }else{
+                        array.push(this_data);
+                    }
+                }
+
+                this.cacheData = array;
             },
             getParam:function(){
+                this.clearCacheData();
+
+                var now_time = new Date().getTime(),
+                    data = this.cacheData;
+
+                for(var i= 0,l=data.length;i<l;i++){
+                    var this_data = data[i];
+
+                    //是否未到动画时间
+                    if(now_time < this_data.startTime){
+                        continue;
+                    }
+
+                    var m_t = this_data.time,
+
+                    //需要变动的总量
+                        m_x = this_data.e_x - this_data.s_x,    //x
+                        m_y = this_data.e_y - this_data.s_y,    //y
+
+                        m_alpha = this_data.e_alpha - this_data.s_alpha, //alpha
+
+                    //过去的时间
+                        u_t = now_time - this_data.startTime;
+
+                    if(m_x !=0){
+                        this.x = this_data.s_x + (m_x/m_t)*u_t;
+                    }
+                    if(m_y !=0){
+                        this.y = this_data.s_y + (m_y/m_t)*u_t;
+                    }
+                    if(m_alpha !=0){
+                        this.alpha = this_data.s_alpha + (m_alpha/m_t)*u_t;
+                        this.alpha = (this.alpha < 0)? 0 : (this.alpha>100)? 100 : this.alpha;
+                    }
+                }
+
 
             },
             draw:function(){
+                APP.clearCanvas(this.canvas);
+
                 this.getParam();
 
-                var temp = 0;
+                var temp = this.x;
+
+                this.ctx.save();
+                //设置画笔透明度
+                this.ctx.globalAlpha = this.alpha/100;
 
                 while(temp<=this.canvasWidth){
                     this.ctx.drawImage(
@@ -695,14 +810,21 @@ var APP = {
                         this.resWidth,
                         this.resHeight,
                         temp,
-                        0,
+                        this.y,
                         this.resWidth * APP.resourceScale,
                         this.resHeight * APP.resourceScale
                     );
 
-                    temp += this.resWidth;
+                    if(this.repeat){
+                        temp += this.resWidth * APP.resourceScale;
+                    }else{
+                        temp += this.canvasWidth;
+                    }
+
                 }
 
+                this.ctx.globalAlpha = 1;
+                this.ctx.restore();
 
             }
 

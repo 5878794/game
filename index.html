@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html manifest="cache.manifest">
+<!--<html manifest="cache.manifest">-->
+<html>
 <head lang="en">
 
     <meta charset="UTF-8">
@@ -32,7 +33,42 @@
     <script src="js/element.js"></script>
     <!--<script src="js/iscroll.js"></script>-->
 
+    <script>
 
+        var loadResources_src = {
+            bg:"/image/bg1.jpg"
+        };
+        var resources = {};
+
+        LOADPAGE = {
+            init:function(){
+                var a = new APP.background({
+                    res:resources.bg,
+                    repeat:true,
+                    x:0,
+                    y:0,
+                    alpha:100
+                });
+                a.animate({
+                    x:-resources.bg.width*APP.resourceScale,
+                    loop:false,
+                    flip:false
+                },6000,0,function(){
+                    console.log(123)
+                });
+
+
+
+                APP.runFn = function(){
+                    a.draw();
+                }
+            }
+        };
+
+
+
+
+    </script>
 
 
 
