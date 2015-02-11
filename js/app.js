@@ -15,7 +15,7 @@ window.addEventListener("touchmove",function(e){
     e.preventDefault();
 },false);
 
-
+var loadResources_src = [];
 
 
 
@@ -640,7 +640,76 @@ var APP = {
                 }
             }
         }
-    }
+    },
+    background:(function(){
+        var bg = function(opt){
+            this.bg = opt.res;
+            this.x = opt.x || 0;
+            this.y = opt.y || 0;
+            this.repeat = $.isBoolean(opt.repeat)? opt.repeat : true;
+
+            this.canvas = null;
+            this.ctx = null;
+
+            this.canvasWidth = 0;
+            this.canvasHeight = 0;
+            this.resWidth = this.bg.width;
+            this.resHeight = this.bg.height;
+
+            this.cacheData = [];
+
+
+
+
+            this.init();
+        };
+        bg.prototype = {
+            init:function(){
+                this.canvas = APP.createCanvas($("body"),null,null,1);
+                this.ctx = this.canvas.getContext("2d");
+
+                this.canvasWidth = this.canvas.width;
+                this.canvasHeight = this.canvas.height;
+
+                this.draw();
+            },
+            animate:function(){
+
+            },
+            clearCacheData:function(){
+
+            },
+            getParam:function(){
+
+            },
+            draw:function(){
+                this.getParam();
+
+                var temp = 0;
+
+                while(temp<=this.canvasWidth){
+                    this.ctx.drawImage(
+                        this.bg,
+                        0,
+                        0,
+                        this.resWidth,
+                        this.resHeight,
+                        temp,
+                        0,
+                        this.resWidth * APP.resourceScale,
+                        this.resHeight * APP.resourceScale
+                    );
+
+                    temp += this.resWidth;
+                }
+
+
+            }
+
+        };
+
+        return bg;
+    })()
 
 
 
