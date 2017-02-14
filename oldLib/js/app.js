@@ -10,10 +10,10 @@
  * Desc:
  */
 
-window.addEventListener("touchmove",function(e){
+window.addEventListener("touchmove", function (e) {
     e.stopPropagation();
     e.preventDefault();
-},false);
+}, false);
 
 
 
